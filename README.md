@@ -168,4 +168,149 @@ Although iteration and recursion can achieve the same results from a computation
         . From an algorithmic perspective, many important strategies like searching, sorting, backtracking, divide-and-conquer, and dynamic programming directly or indirectly use this way of thinking.
 
         . From a data structure perspective, recursion is naturally suited for dealing with linked lists, trees, and graphs, as they are well suited for analysis using the divide-and-conquer approach.
-     
+
+## Time complexity
+
+The runtime can intuitively assess the efficiency of an algorithm. How can we accurately estimate the runtime of a piece of an algorithm?
+
+1. Determining the Running Platform: This includes hardware configuration, programming language, system environment, etc., all of which can affect the efficiency of code execution.
+2. Evaluating the Run Time for Various Computational Operations: For instance, an addition operation + might take 1 ns, a multiplication operation * might take 10 ns, a print operation print() might take 5 ns, etc.
+3. Counting All the Computational Operations in the Code: Summing the execution times of all these operations gives the total run time.
+
+For example, consider the following code with an input size of n:
+```ruby
+ # Under an operating platform
+ def algorithm(n: int):
+ a = 2      # 1 ns
+ a = a + 1  # 1 ns
+ a = a * 2  # 10 ns
+ # Cycle n times
+for _ in range(n):  # 1 ns
+print(0)        # 5 ns
+```
+Using the above method, the run time of the algorithm can be calculated as (6n+12)ns:
+
+However, in practice, counting the run time of an algorithm is neither practical nor reasonable. First, we don't want to tie the estimated time to the running platform, as algorithms need to run on various platforms. Second, it's challenging to know the run time for each type of operation, making the estimation process difficult.
+
+### Assessing time growth trend
+
+Time complexity analysis does not count the algorithm's run time, but rather the growth trend of the run time as the data volume increases.
+
+Let's understand this concept of "time growth trend" with an example. Assume the input data size is 
+n, and consider three algorithms A, B, and C:
+
+```ruby
+# Time complexity of algorithm A: constant order
+def algorithm_A(n: int):
+    print(0)
+# Time complexity of algorithm B: linear order
+def algorithm_B(n: int):
+    for _ in range(n):
+        print(0)
+# Time complexity of algorithm C: constant order
+def algorithm_C(n: int):
+    for _ in range(1000000):
+        print(0)
+```
+
+. Algorithm A has just one print operation, and its run time does not grow with n. Its time complexity is considered "constant order."
+
+. Algorithm B involves a print operation looping n times, and its run time grows linearly with n. Its time complexity is "linear order."
+
+. Algorithm C has a print operation looping 1,000,000 times. Although it takes a long time, it is independent of the input data size n. Therefore, the time complexity of C is the same as A, which is "constant order."
+
+ > [!TIP]
+     > For example, although algorithms A and C have the same time complexity, their actual run times can be quite different. Similarly, even though algorithm B has a higher time complexity than C, it is clearly superior when the input data size n is small. In these cases, it's difficult to judge the efficiency of algorithms based solely on time complexity. Nonetheless, despite these issues, complexity analysis remains the most effective and commonly used method for evaluating algorithm efficiency.
+
+1. Constant order O(1):
+
+   Constant order means the number of operations is independent of the input data size n. In the following function, although the number of operations size might be large, the time 
+   complexity remains O(1) as it's unrelated to n:
+
+   ```ruby
+   def constant(n: int) -> int:
+   """Constant complexity"""
+   count = 0
+   size = 100000
+   for _ in range(size):
+   count += 1
+   return count
+   ```
+
+2. Linear order O(n)
+
+   Linear order indicates the number of operations grows linearly with the input data size n. Linear order commonly appears in single-loop structures:
+
+   
+   ```ruby
+   def linear(n: int) -> int:
+         """Linear complexity"""
+         count = 0
+         for _ in range(n):
+               count += 1
+                return count
+   ```
+3. Quadratic order O(n*n)
+
+   Quadratic order means the number of operations grows quadratically with the input data size n. Quadratic order typically appears in nested loops, where both the outer and inner loops 
+   have a time complexity of O(n), resulting in an overall complexity of O(n*n)
+
+      
+   ```ruby
+   def quadratic(n: int) -> int:
+    """Quadratic complexity"""
+    count = 0
+    # Loop count is squared in relation to the data size n
+    for i in range(n):
+        for j in range(n):
+            count += 1
+    return count
+   ```
+For instance, in bubble sort, the outer loop runs  n-1 For instance, in bubble sort, the outer loop runs n-1, n-2,..., 2, 1 times, averaging n/2 times, resulting in a time complexity of O((n-1)n/2) = O(n*n) 
+      
+   ```ruby
+ def bubble_sort(nums: list[int]) -> int:
+    """Quadratic complexity (bubble sort)"""
+    count = 0  # Counter
+    # Outer loop: unsorted range is [0, i]
+    for i in range(len(nums) - 1, 0, -1):
+        # Inner loop: swap the largest element in the unsorted range [0, i] to the right end of the range
+        for j in range(i):
+            if nums[j] > nums[j + 1]:
+                # Swap nums[j] and nums[j + 1]
+                tmp: int = nums[j]
+                nums[j] = nums[j + 1]
+                nums[j + 1] = tmp
+                count += 3  # Element swap includes 3 individual operations
+    return count
+   ```
+4. Exponential order O(2^n)
+
+   Biological "cell division" is a classic example of exponential order growth: starting with one cell, it becomes two after one division, four after two divisions, and so on, resulting 
+   in  2^n cells after n divisions.
+
+      ```ruby
+      def exponential(n: int) -> int:
+          """Exponential complexity (loop implementation)"""
+          count = 0
+          base = 1
+          # Cells split into two every round, forming the sequence 1, 2, 4, 8, ..., 2^(n-1)
+          for _ in range(n):
+              for _ in range(base):
+                  count += 1
+              base *= 2
+          # count = 1 + 2 + 4 + 8 + .. + 2^(n-1) = 2^n - 1
+          return count
+   ```
+   In practice, exponential order often appears in recursive functions. For example, in the code below, it recursively splits into two halves, stopping after n
+ divisions:
+
+      ```ruby
+      def exp_recur(n: int) -> int:
+          """Exponential complexity (recursive implementation)"""
+          if n == 1:
+              return 1
+          return exp_recur(n - 1) + exp_recur(n - 1) + 1
+   ```
+
+   Exponential order growth is extremely rapid and is commonly seen in exhaustive search methods (brute force, backtracking, etc.). For large-scale problems, exponential order is unacceptable, often requiring dynamic programming or greedy algorithms as solutions.
