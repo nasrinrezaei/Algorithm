@@ -314,3 +314,75 @@ For instance, in bubble sort, the outer loop runs  n-1 For instance, in bubble s
    ```
 
    Exponential order growth is extremely rapid and is commonly seen in exhaustive search methods (brute force, backtracking, etc.). For large-scale problems, exponential order is unacceptable, often requiring dynamic programming or greedy algorithms as solutions.
+
+   5.  Logarithmic order O(logn)
+  
+      In contrast to exponential order, logarithmic order reflects situations where "the size is halved each round." Given an input data size n, since the size is halved each round, the number of iterations is logn, the inverse function of n^2.
+
+         ```ruby
+            def logarithmic(n: int) -> int:
+          """Logarithmic complexity (loop implementation)"""
+          count = 0
+          while n > 1:
+              n = n / 2
+              count += 1
+          return count
+    ```
+Like exponential order, logarithmic order also frequently appears in recursive functions. The code below forms a recursive tree of height logn
+
+         ```ruby
+                 def log_recur(n: int) -> int:
+                """Logarithmic complexity (recursive implementation)"""
+                if n <= 1:
+                    return 0
+                return log_recur(n / 2) + 1
+    ```
+
+    Logarithmic order is typical in algorithms based on the divide-and-conquer strategy, embodying the "split into many" and "simplify complex problems" approach. It's slow-growing and is the most ideal time complexity after constant order.
+
+6.  Linear-logarithmic order O(n logn)
+   Linear-logarithmic order often appears in nested loops, with the complexities of the two loops being O(logn) and O(n) respectively. The related code is as follows:
+
+        ```ruby
+             def linear_log_recur(n: int) -> int:
+                """Linear logarithmic complexity"""
+                if n <= 1:
+                    return 1
+                count: int = linear_log_recur(n // 2) + linear_log_recur(n // 2)
+                for _ in range(n):
+                    count += 1
+                return count
+    ```
+
+    Mainstream sorting algorithms typically have a time complexity of O(n logn), such as quicksort, mergesort, and heapsort.
+
+7. Factorial order O(n!)
+   Factorial order corresponds to the mathematical problem of "full permutation.
+
+        ```ruby
+             def factorial_recur(n: int) -> int:
+          """Factorial complexity (recursive implementation)"""
+          if n == 0:
+              return 1
+          count = 0
+          # From 1 split into n
+          for _ in range(n):
+              count += factorial_recur(n - 1)
+          return count
+    ```
+
+    Note that factorial order grows even faster than exponential order; it's unacceptable for larger n values.
+
+## Space complexity
+
+Space complexity is used to measure the growth trend of the memory space occupied by an algorithm as the amount of data increases. This concept is very similar to time complexity, except that "running time" is replaced with "occupied memory space".
+
+# Space related to algorithms
+
+The memory space used by an algorithm during its execution mainly includes the following types.
+
+. Input space: Used to store the input data of the algorithm.
+. Temporary space: Used to store variables, objects, function contexts, and other data during the algorithm's execution.
+. Output space: Used to store the output data of the algorithm.
+
+Generally, the scope of space complexity statistics includes both "Temporary Space" and "Output Space".
