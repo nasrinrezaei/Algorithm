@@ -991,3 +991,253 @@ We can compare a stack to a pile of plates on a table. To access the bottom plat
 
 We refer to the top of the pile of elements as the "top of the stack" and the bottom as the "bottom of the stack." The operation of adding elements to the top of the stack is called "push," and the operation of removing the top element is called "pop."
 Typically, we can directly use the stack class built into the programming language. However, some languages may not specifically provide a stack class. In these cases, we can use the language's "array" or "linked list" as a stack and ignore operations that are not related to stack logic in the program.
+
+ # Common operations on stack
+
+ The specific method names depend on the programming language used. Here, we use push(), pop(), and peek() as examples.
+
+ # Implementing a stack
+
+ To gain a deeper understanding of how a stack operates, let's try implementing a stack class ourselves.
+
+A stack follows the principle of Last-In-First-Out, which means we can only add or remove elements at the top of the stack. However, both arrays and linked lists allow adding and removing elements at any position, therefore a stack can be seen as a restricted array or linked list. In other words, we can "shield" certain irrelevant operations of an array or linked list, aligning their external behavior with the characteristics of a stack.
+
+Implementation based on a linked list
+
+When implementing a stack using a linked list, we can consider the head node of the list as the top of the stack and the tail node as the bottom of the stack.
+we simply insert elements at the head of the linked list. This method of node insertion is known as "head insertion." For the pop operation, we just need to remove the head node from the list.
+
+Below is an example code for implementing a stack based on a linked list:
+
+```ruby
+     class LinkedListStack:
+    """Stack class based on linked list"""
+
+    def __init__(self):
+        """Constructor"""
+        self._peek: ListNode | None = None
+        self._size: int = 0
+
+    def size(self) -> int:
+        """Get the length of the stack"""
+        return self._size
+
+    def is_empty(self) -> bool:
+        """Determine if the stack is empty"""
+        return self._size == 0
+
+    def push(self, val: int):
+        """Push"""
+        node = ListNode(val)
+        node.next = self._peek
+        self._peek = node
+        self._size += 1
+
+    def pop(self) -> int:
+        """Pop"""
+        num = self.peek()
+        self._peek = self._peek.next
+        self._size -= 1
+        return num
+
+    def peek(self) -> int:
+        """Access stack top element"""
+        if self.is_empty():
+            raise IndexError("Stack is empty")
+        return self._peek.val
+
+    def to_list(self) -> list[int]:
+        """Convert to a list for printing"""
+        arr = []
+        node = self._peek
+        while node:
+            arr.append(node.val)
+            node = node.next
+        arr.reverse()
+        return arr
+      
+```
+
+Implementation based on an array
+
+When implementing a stack using an array, we can consider the end of the array as the top of the stack. push and pop operations correspond to adding and removing elements at the end of the array, respectively, both with a time complexity of O(1).
+
+Since the elements to be pushed onto the stack may continuously increase, we can use a dynamic array, thus avoiding the need to handle array expansion ourselves. Here is an example code:
+
+```ruby
+   class ArrayStack:
+    """Stack class based on array"""
+
+    def __init__(self):
+        """Constructor"""
+        self._stack: list[int] = []
+
+    def size(self) -> int:
+        """Get the length of the stack"""
+        return len(self._stack)
+
+    def is_empty(self) -> bool:
+        """Determine if the stack is empty"""
+        return self.size() == 0
+
+    def push(self, item: int):
+        """Push"""
+        self._stack.append(item)
+
+    def pop(self) -> int:
+        """Pop"""
+        if self.is_empty():
+            raise IndexError("Stack is empty")
+        return self._stack.pop()
+
+    def peek(self) -> int:
+        """Access stack top element"""
+        if self.is_empty():
+            raise IndexError("Stack is empty")
+        return self._stack[-1]
+
+    def to_list(self) -> list[int]:
+        """Return array for printing"""
+        return self._stack
+      
+```
+
+# Comparison of the two implementations
+
+Supported Operations
+
+Both implementations support all the operations defined in a stack. The array implementation additionally supports random access, but this is beyond the scope of a stack definition and is generally not used.
+
+# Time Efficiency
+
+In the array-based implementation, both push and pop operations occur in pre-allocated contiguous memory, which has good cache locality and therefore higher efficiency. However, if the push operation exceeds the array capacity, it triggers a resizing mechanism, making the time complexity of that push operation.
+
+In the linked list implementation, list expansion is very flexible, and there is no efficiency decrease issue as in array expansion. However, the push operation requires initializing a node object and modifying pointers, so its efficiency is relatively lower. If the elements being pushed are already node objects, then the initialization step can be skipped, improving efficiency.
+
+Thus, when the elements for push and pop operations are basic data types like int or double, we can draw the following conclusions:
+
+The array-based stack implementation's efficiency decreases during expansion, but since expansion is a low-frequency operation, its average efficiency is higher.
+The linked list-based stack implementation provides more stable efficiency performance.
+
+# Space Efficiency
+
+When initializing a list, the system allocates an "initial capacity," which might exceed the actual need; moreover, the expansion mechanism usually increases capacity by a specific factor (like doubling), which may also exceed the actual need. Therefore, the array-based stack might waste some space.
+
+However, since linked list nodes require extra space for storing pointers, the space occupied by linked list nodes is relatively larger.
+
+In summary, we cannot simply determine which implementation is more memory-efficient. It requires analysis based on specific circumstances.
+
+
+
+# Typical applications of stack
+
+Back and forward in browsers, undo and redo in software. Every time we open a new webpage, the browser pushes the previous page onto the stack, allowing us to go back to the previous page through the back operation, which is essentially a pop operation. To support both back and forward, two stacks are needed to work together.
+
+Memory management in programs. Each time a function is called, the system adds a stack frame at the top of the stack to record the function's context information. In recursive functions, the downward recursion phase keeps pushing onto the stack, while the upward backtracking phase keeps popping from the stack.
+
+
+## Queue
+
+A queue is a linear data structure that follows the First-In-First-Out (FIFO) rule. As the name suggests, a queue simulates the phenomenon of lining up, where newcomers join the queue at the rear, and the person at the front leaves the queue first.
+
+We call the front of the queue the "head" and the back the "tail." The operation of adding elements to the rear of the queue is termed "enqueue," and the operation of removing elements from the front is termed "dequeue."
+
+We can directly use the ready-made queue classes in programming languages:
+
+```ruby
+	/* Initialize the queue */
+	// JavaScript does not have a built-in queue, so Array can be used as a queue
+	const queue = [];
+	
+	/* Enqueue elements */
+	queue.push(1);
+	queue.push(3);
+	queue.push(2);
+	queue.push(5);
+	queue.push(4);
+	
+	/* Access the first element */
+	const peek = queue[0];
+	
+	/* Dequeue an element */
+	// Since the underlying structure is an array, shift() method has a time complexity of O(n)
+	const pop = queue.shift();
+	
+	/* Get the length of the queue */
+	const size = queue.length;
+	
+	/* Check if the queue is empty */
+	const empty = queue.length === 0;
+	      
+```
+
+## Implementing a queue
+
+To implement a queue, we need a data structure that allows adding elements at one end and removing them at the other. Both linked lists and arrays meet this requirement.
+
+1. Implementation based on a linked list
+
+   We can consider the "head node" and "tail node" of a linked list as the "front" and "rear" of the queue, respectively. It is stipulated that nodes can only be 
+   added at the rear and removed at the front.
+
+```ruby
+	class LinkedListQueue:
+    """Queue class based on linked list"""
+
+    def __init__(self):
+        """Constructor"""
+        self._front: ListNode | None = None  # Head node front
+        self._rear: ListNode | None = None  # Tail node rear
+        self._size: int = 0
+
+    def size(self) -> int:
+        """Get the length of the queue"""
+        return self._size
+
+    def is_empty(self) -> bool:
+        """Determine if the queue is empty"""
+        return self._size == 0
+
+    def push(self, num: int):
+        """Enqueue"""
+        # Add num behind the tail node
+        node = ListNode(num)
+        # If the queue is empty, make the head and tail nodes both point to that node
+        if self._front is None:
+            self._front = node
+            self._rear = node
+        # If the queue is not empty, add that node behind the tail node
+        else:
+            self._rear.next = node
+            self._rear = node
+        self._size += 1
+
+    def pop(self) -> int:
+        """Dequeue"""
+        num = self.peek()
+        # Remove head node
+        self._front = self._front.next
+        self._size -= 1
+        return num
+
+    def peek(self) -> int:
+        """Access front element"""
+        if self.is_empty():
+            raise IndexError("Queue is empty")
+        return self._front.val
+
+    def to_list(self) -> list[int]:
+        """Convert to a list for printing"""
+        queue = []
+        temp = self._front
+        while temp:
+            queue.append(temp.val)
+            temp = temp.next
+        return queue
+
+	      
+```
+
+2. Implementation based on an array
+
+   
