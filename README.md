@@ -1240,4 +1240,154 @@ To implement a queue, we need a data structure that allows adding elements at on
 
 2. Implementation based on an array
 
+    similar to implementing a queue with an array, we can also use a circular array to implement a double-ended queue.
    
+```ruby
+class ArrayDeque:
+    """Double-ended queue class based on circular array"""
+
+    def __init__(self, capacity: int):
+        """Constructor"""
+        self._nums: list[int] = [0] * capacity
+        self._front: int = 0
+        self._size: int = 0
+
+    def capacity(self) -> int:
+        """Get the capacity of the double-ended queue"""
+        return len(self._nums)
+
+    def size(self) -> int:
+        """Get the length of the double-ended queue"""
+        return self._size
+
+    def is_empty(self) -> bool:
+        """Determine if the double-ended queue is empty"""
+        return self._size == 0
+
+    def index(self, i: int) -> int:
+        """Calculate circular array index"""
+        # Implement circular array by modulo operation
+        # When i exceeds the tail of the array, return to the head
+        # When i exceeds the head of the array, return to the tail
+        return (i + self.capacity()) % self.capacity()
+
+    def push_first(self, num: int):
+        """Front enqueue"""
+        if self._size == self.capacity():
+            print("Double-ended queue is full")
+            return
+        # Move the front pointer one position to the left
+        # Implement front crossing the head of the array to return to the tail by modulo operation
+        self._front = self.index(self._front - 1)
+        # Add num to the front
+        self._nums[self._front] = num
+        self._size += 1
+
+    def push_last(self, num: int):
+        """Rear enqueue"""
+        if self._size == self.capacity():
+            print("Double-ended queue is full")
+            return
+        # Calculate rear pointer, pointing to rear index + 1
+        rear = self.index(self._front + self._size)
+        # Add num to the rear
+        self._nums[rear] = num
+        self._size += 1
+
+    def pop_first(self) -> int:
+        """Front dequeue"""
+        num = self.peek_first()
+        # Move front pointer one position backward
+        self._front = self.index(self._front + 1)
+        self._size -= 1
+        return num
+
+    def pop_last(self) -> int:
+        """Rear dequeue"""
+        num = self.peek_last()
+        self._size -= 1
+        return num
+
+    def peek_first(self) -> int:
+        """Access front element"""
+        if self.is_empty():
+            raise IndexError("Double-ended queue is empty")
+        return self._nums[self._front]
+
+    def peek_last(self) -> int:
+        """Access rear element"""
+        if self.is_empty():
+            raise IndexError("Double-ended queue is empty")
+        # Calculate rear element index
+        last = self.index(self._front + self._size - 1)
+        return self._nums[last]
+
+    def to_array(self) -> list[int]:
+        """Return array for printing"""
+        # Only convert elements within valid length range
+        res = []
+        for i in range(self._size):
+            res.append(self._nums[self.index(self._front + i)])
+        return res
+
+	      
+```
+
+##  Hash table
+
+A hash table, also known as a hash map, is a data structure that establishes a mapping between keys and values, enabling efficient element retrieval. Specifically, when we input a key into the hash table, we can retrieve the corresponding value in O(1) time complexity.
+
+In addition to hash tables, arrays and linked lists can also be used to implement query functionality, but the time complexity is different. Their efficiency is compared in Table 6-1:
+
+. Inserting an element: Simply append the element to the tail of the array (or linked list). The time complexity of this operation is O(1)
+
+. Searching for an element: As the array (or linked list) is unsorted, searching for an element requires traversing through all of the elements. The time complexity of this operation is O(n).
+
+.Deleting an element: To remove an element, we first need to locate it. Then, we delete it from the array (or linked list). The time complexity of this operation is O(n).
+
+As observed, the time complexity for operations (insertion, deletion, searching, and modification) in a hash table is O(1), which is highly efficient.
+
+### Common operations of hash table
+
+Common operations of a hash table include: initialization, querying, adding key-value pairs, and deleting key-value pairs. Here is an example code:
+
+```ruby
+
+/* Initialize hash table */
+const map = new Map();
+/* Add operation */
+// Add key-value pair (key, value) to the hash table
+map.set(12836, 'Xiao Ha');
+map.set(15937, 'Xiao Luo');
+map.set(16750, 'Xiao Suan');
+map.set(13276, 'Xiao Fa');
+map.set(10583, 'Xiao Ya');
+
+/* Query operation */
+// Input key into hash table, get value
+let name = map.get(15937);
+
+/* Delete operation */
+// Delete key-value pair (key, value) from hash table
+map.delete(10583);
+	      
+```
+
+There are three common ways to traverse a hash table: traversing key-value pairs, traversing keys, and traversing values. Here is an example code:
+
+```ruby
+/* Traverse hash table */
+console.info('\nTraverse key-value pairs Key->Value');
+for (const [k, v] of map.entries()) {
+    console.info(k + ' -> ' + v);
+}
+console.info('\nTraverse keys only Key');
+for (const k of map.keys()) {
+    console.info(k);
+}
+console.info('\nTraverse values only Value');
+for (const v of map.values()) {
+    console.info(v);
+}
+
+```
