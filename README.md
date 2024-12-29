@@ -1391,3 +1391,154 @@ for (const v of map.values()) {
 }
 
 ```
+### Simple implementation of a hash table
+
+First, let's consider the simplest case: implementing a hash table using only one array. In the hash table, each empty slot in the array is called a bucket, and each bucket can store a key-value pair. Therefore, the query operation involves finding the bucket corresponding to the key and retrieving the value from it.
+
+So, how do we locate the corresponding bucket based on the key? This is achieved through a hash function. The role of the hash function is to map a larger input space to a smaller output space. In a hash table, the input space consists of all the keys, and the output space consists of all the buckets (array indices). In other words, given a key, we can use the hash function to determine the storage location of the corresponding key-value pair in the array.
+
+With a given key, the calculation of the hash function consists of two steps:
+
+1. Calculate the hash value by using a certain hash algorithm hash().
+2. Take the modulus of the hash value with the bucket count (array length) capacity to obtain the array index corresponding to the key.
+
+index = hash(key) % capacity
+
+Afterward, we can use the index to access the corresponding bucket in the hash table and thereby retrieve the value.
+
+Let's assume that the array length is capacity = 100, and the hash algorithm is defined as hash(key) = key. Therefore, the hash function can be expressed as key % 100
+
+### Hash collision and resizing
+
+Essentially, the role of the hash function is to map the entire input space of all keys to the output space of all array indices. However, the input space is often much larger than the output space. Therefore, theoretically, there will always be cases where "multiple inputs correspond to the same output".
+
+In the example above, with the given hash function, when the last two digits of the input key are the same, the hash function produces the same output. For instance, when querying two students with student IDs 12836 and 20336, we find:
+
+12836 % 100 = 36
+
+It is easy to understand that as the capacity n of the hash table increases, the probability of multiple keys being assigned to the same bucket decreases, resulting in fewer collisions. Therefore, we can reduce hash collisions by resizing the hash table.
+
+Similar to array expansion, resizing a hash table requires migrating all key-value pairs from the original hash table to the new one, which is time-consuming. Furthermore, since the capacity of the hash table changes, we need to recalculate the storage positions of all key-value pairs using the hash function, further increasing the computational overhead of the resizing process. Therefore, programming languages often allocate a sufficiently large capacity for the hash table to prevent frequent resizing.
+20336 % 100 = 36
+
+
+The load factor is an important concept in hash tables. It is defined as the ratio of the number of elements in the hash table to the number of buckets. It is used to measure the severity of hash collisions and often serves as a trigger for hash table resizing. For example, in Java, when the load factor exceeds 0.75, the system will resize the hash table to twice its original size.
+
+### Hash collision
+
+The previous section mentioned that, in most cases, the input space of a hash function is much larger than the output space, so theoretically, hash collisions are inevitable. For example, if the input space is all integers and the output space is the size of the array capacity, then multiple integers will inevitably be mapped to the same bucket index.
+
+Hash collisions can lead to incorrect query results, severely impacting the usability of the hash table. To address this issue, whenever a hash collision occurs, we perform hash table resizing until the collision disappears. This approach is pretty simple, straightforward, and working well. However, it appears to be pretty inefficient as the table expansion involves a lot of data migration as well as recalculation of hash code, which are expansive. To improve efficiency, we can adopt the following strategies:
+
+1. Improve the hash table data structure in a way that locating target element is still functioning well in the event of a hash collision.
+2. Expansion is the last resort before it becomes necessary, when severe collisions are observed.
+
+There are mainly two methods for improving the structure of hash tables: "Separate Chaining" and "Open Addressing".
+
+### Separate chaining
+
+In the original hash table, each bucket can store only one key-value pair. Separate chaining converts a single element into a linked list, treating key-value pairs as list nodes, storing all colliding key-value pairs in the same linked list. Figure 6-5 shows an example of a hash table with separate chaining.
+
+The operations of a hash table implemented with separate chaining have changed as follows:
+
+. Querying Elements: Input key, obtain the bucket index through the hash function, then access the head node of the linked list. Traverse the linked list and compare key to find the target key-value pair.
+
+. Adding Elements: Access the head node of the linked list via the hash function, then append the node (key-value pair) to the list.
+
+. Deleting Elements: Access the head of the linked list based on the result of the hash function, then traverse the linked list to find the target node and delete it.
+
+Separate chaining has the following limitations:
+
+. Increased Space Usage: The linked list contains node pointers, which consume more memory space than arrays.
+
+. Reduced Query Efficiency: This is because linear traversal of the linked list is required to find the corresponding element.
+
+The code below provides a simple implementation of a separate chaining hash table, with two things to note:
+
+. Lists (dynamic arrays) are used instead of linked lists for simplicity. In this setup, the hash table (array) contains multiple buckets, each of which is a list.
+
+. This implementation includes a hash table resizing method. When the load factor exceeds 2/3, we expand the hash table to twice its original size.
+
+```ruby
+class HashMapChaining:
+    """Chained address hash table"""
+
+    def __init__(self):
+        """Constructor"""
+        self.size = 0  # Number of key-value pairs
+        self.capacity = 4  # Hash table capacity
+        self.load_thres = 2.0 / 3.0  # Load factor threshold for triggering expansion
+        self.extend_ratio = 2  # Expansion multiplier
+        self.buckets = [[] for _ in range(self.capacity)]  # Bucket array
+
+    def hash_func(self, key: int) -> int:
+        """Hash function"""
+        return key % self.capacity
+
+    def load_factor(self) -> float:
+        """Load factor"""
+        return self.size / self.capacity
+
+    def get(self, key: int) -> str | None:
+        """Query operation"""
+        index = self.hash_func(key)
+        bucket = self.buckets[index]
+        # Traverse the bucket, if the key is found, return the corresponding val
+        for pair in bucket:
+            if pair.key == key:
+                return pair.val
+        # If the key is not found, return None
+        return None
+
+    def put(self, key: int, val: str):
+        """Add operation"""
+        # When the load factor exceeds the threshold, perform expansion
+        if self.load_factor() > self.load_thres:
+            self.extend()
+        index = self.hash_func(key)
+        bucket = self.buckets[index]
+        # Traverse the bucket, if the specified key is encountered, update the corresponding val and return
+        for pair in bucket:
+            if pair.key == key:
+                pair.val = val
+                return
+        # If the key is not found, add the key-value pair to the end
+        pair = Pair(key, val)
+        bucket.append(pair)
+        self.size += 1
+
+    def remove(self, key: int):
+        """Remove operation"""
+        index = self.hash_func(key)
+        bucket = self.buckets[index]
+        # Traverse the bucket, remove the key-value pair from it
+        for pair in bucket:
+            if pair.key == key:
+                bucket.remove(pair)
+                self.size -= 1
+                break
+
+    def extend(self):
+        """Extend hash table"""
+        # Temporarily store the original hash table
+        buckets = self.buckets
+        # Initialize the extended new hash table
+        self.capacity *= self.extend_ratio
+        self.buckets = [[] for _ in range(self.capacity)]
+        self.size = 0
+        # Move key-value pairs from the original hash table to the new hash table
+        for bucket in buckets:
+            for pair in bucket:
+                self.put(pair.key, pair.val)
+
+    def print(self):
+        """Print hash table"""
+        for bucket in self.buckets:
+            res = []
+            for pair in bucket:
+                res.append(str(pair.key) + " -> " + pair.val)
+            print(res)
+
+```
+
+It's worth noting that when the linked list is very long, the query efficiency O(n) is poor. In this case, the list can be converted to an "AVL tree" or "Red-Black tree" to optimize the time complexity of the query operation to O(log n).
