@@ -1542,3 +1542,24 @@ class HashMapChaining:
 ```
 
 It's worth noting that when the linked list is very long, the query efficiency O(n) is poor. In this case, the list can be converted to an "AVL tree" or "Red-Black tree" to optimize the time complexity of the query operation to O(log n).
+
+## Open addressing
+
+Open addressing does not introduce additional data structures but instead handles hash collisions through "multiple probing". The probing methods mainly include linear probing, quadratic probing, and double hashing.
+Let's use linear probing as an example to introduce the mechanism of open addressing hash tables.
+
+1. Linear probing
+
+Linear probing uses a fixed-step linear search for probing, differing from ordinary hash tables.
+
+.Inserting Elements: Calculate the bucket index using the hash function. If the bucket already contains an element, linearly traverse forward from the conflict position (usually with a step size of 1 until an empty bucket is found, then insert the element.
+
+. Searching for Elements: If a hash collision is encountered, use the same step size to linearly traverse forward until the corresponding element is found and return value; if an empty bucket is encountered, it means the target element is not in the hash table, so return None.
+
+However, linear probing is prone to create "clustering". Specifically, the longer the continuously occupied positions in the array, the greater the probability of hash collisions occurring in these continuous positions, further promoting the growth of clustering at that position, forming a vicious cycle, and ultimately leading to degraded efficiency of insertion, deletion, query, and update operations.
+
+It's important to note that we cannot directly delete elements in an open addressing hash table. Deleting an element creates an empty bucket None in the array. When searching for elements, if linear probing encounters this empty bucket, it will return, making the elements below this bucket inaccessible. The program may incorrectly assume these elements do not exist.
+
+To solve this problem, we can adopt the lazy deletion mechanism: instead of directly removing elements from the hash table, use a constant TOMBSTONE to mark the bucket. In this mechanism, both None and TOMBSTONE represent empty buckets and can hold key-value pairs. However, when linear probing encounters TOMBSTONE, it should continue traversing since there may still be key-value pairs below it.
+
+However, lazy deletion may accelerate the performance degradation of the hash table. Every deletion operation produces a delete mark, and as TOMBSTONE increases, the search time will also increase because linear probing may need to skip multiple TOMBSTONE to find the target element.
