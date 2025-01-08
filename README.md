@@ -1,3 +1,4 @@
+
 # Algorithm
 ## Algorithm efficiency assessment
 
@@ -1563,3 +1564,127 @@ It's important to note that we cannot directly delete elements in an open addres
 To solve this problem, we can adopt the lazy deletion mechanism: instead of directly removing elements from the hash table, use a constant TOMBSTONE to mark the bucket. In this mechanism, both None and TOMBSTONE represent empty buckets and can hold key-value pairs. However, when linear probing encounters TOMBSTONE, it should continue traversing since there may still be key-value pairs below it.
 
 However, lazy deletion may accelerate the performance degradation of the hash table. Every deletion operation produces a delete mark, and as TOMBSTONE increases, the search time will also increase because linear probing may need to skip multiple TOMBSTONE to find the target element.
+
+
+To address this, consider recording the index of the first encountered TOMBSTONE during linear probing and swapping the positions of the searched target element with that TOMBSTONE. The benefit of doing this is that each time an element is queried or added, the element will be moved to a bucket closer to its ideal position (the starting point of probing), thereby optimizing query efficiency.
+
+The code below implements an open addressing (linear probing) hash table with lazy deletion. To make better use of the hash table space, we treat the hash table as a "circular array,". When going beyond the end of the array, we return to the beginning and continue traversing.
+
+
+```ruby
+class HashMapOpenAddressing:
+    """Open addressing hash table"""
+
+    def __init__(self):
+        """Constructor"""
+        self.size = 0  # Number of key-value pairs
+        self.capacity = 4  # Hash table capacity
+        self.load_thres = 2.0 / 3.0  # Load factor threshold for triggering expansion
+        self.extend_ratio = 2  # Expansion multiplier
+        self.buckets: list[Pair | None] = [None] * self.capacity  # Bucket array
+        self.TOMBSTONE = Pair(-1, "-1")  # Removal mark
+
+    def hash_func(self, key: int) -> int:
+        """Hash function"""
+        return key % self.capacity
+
+    def load_factor(self) -> float:
+        """Load factor"""
+        return self.size / self.capacity
+
+    def find_bucket(self, key: int) -> int:
+        """Search for the bucket index corresponding to key"""
+        index = self.hash_func(key)
+        first_tombstone = -1
+        # Linear probing, break when encountering an empty bucket
+        while self.buckets[index] is not None:
+            # If the key is encountered, return the corresponding bucket index
+            if self.buckets[index].key == key:
+                # If a removal mark was encountered earlier, move the key-value pair to that index
+                if first_tombstone != -1:
+                    self.buckets[first_tombstone] = self.buckets[index]
+                    self.buckets[index] = self.TOMBSTONE
+                    return first_tombstone  # Return the moved bucket index
+                return index  # Return bucket index
+            # Record the first encountered removal mark
+            if first_tombstone == -1 and self.buckets[index] is self.TOMBSTONE:
+                first_tombstone = index
+            # Calculate the bucket index, return to the head if exceeding the tail
+            index = (index + 1) % self.capacity
+        # If the key does not exist, return the index of the insertion point
+        return index if first_tombstone == -1 else first_tombstone
+
+    def get(self, key: int) -> str:
+        """Query operation"""
+        # Search for the bucket index corresponding to key
+        index = self.find_bucket(key)
+        # If the key-value pair is found, return the corresponding val
+        if self.buckets[index] not in [None, self.TOMBSTONE]:
+            return self.buckets[index].val
+        # If the key-value pair does not exist, return None
+        return None
+
+    def put(self, key: int, val: str):
+        """Add operation"""
+        # When the load factor exceeds the threshold, perform expansion
+        if self.load_factor() > self.load_thres:
+            self.extend()
+        # Search for the bucket index corresponding to key
+        index = self.find_bucket(key)
+        # If the key-value pair is found, overwrite val and return
+        if self.buckets[index] not in [None, self.TOMBSTONE]:
+            self.buckets[index].val = val
+            return
+        # If the key-value pair does not exist, add the key-value pair
+        self.buckets[index] = Pair(key, val)
+        self.size += 1
+
+    def remove(self, key: int):
+        """Remove operation"""
+        # Search for the bucket index corresponding to key
+        index = self.find_bucket(key)
+        # If the key-value pair is found, cover it with a removal mark
+        if self.buckets[index] not in [None, self.TOMBSTONE]:
+            self.buckets[index] = self.TOMBSTONE
+            self.size -= 1
+
+    def extend(self):
+        """Extend hash table"""
+        # Temporarily store the original hash table
+        buckets_tmp = self.buckets
+        # Initialize the extended new hash table
+        self.capacity *= self.extend_ratio
+        self.buckets = [None] * self.capacity
+        self.size = 0
+        # Move key-value pairs from the original hash table to the new hash table
+        for pair in buckets_tmp:
+            if pair not in [None, self.TOMBSTONE]:
+                self.put(pair.key, pair.val)
+
+    def print(self):
+        """Print hash table"""
+        for pair in self.buckets:
+            if pair is None:
+                print("None")
+            elif pair is self.TOMBSTONE:
+                print("TOMBSTONE")
+            else:
+                print(pair.key, "->", pair.val)
+
+```
+
+### Quadratic probing is similar to linear probing and is one of the common strategies of open addressing. When a collision occurs, quadratic probing does not simply skip a fixed number of steps but skips a number of steps equal to the "square of the number of probes", i.e., 1,4,9,.... steps
+
+Quadratic probing has the following advantages:
+
+Quadratic probing attempts to alleviate the clustering effect of linear probing by skipping the distance of the square of the number of probes.
+
+
+Quadratic probing skips larger distances to find empty positions, which helps to distribute data more evenly.
+
+However, quadratic probing is not perfect:
+
+Clustering still exists, i.e., some positions are more likely to be occupied than others.
+
+Due to the growth of squares, quadratic probing may not probe the entire hash table, meaning that even if there are empty buckets in the hash table, quadratic probing may not be able to access them.
+
