@@ -1673,7 +1673,9 @@ class HashMapOpenAddressing:
 
 ```
 
-### Quadratic probing is similar to linear probing and is one of the common strategies of open addressing. When a collision occurs, quadratic probing does not simply skip a fixed number of steps but skips a number of steps equal to the "square of the number of probes", i.e., 1,4,9,.... steps
+### Quadratic probing
+
+Quadratic probing is similar to linear probing and is one of the common strategies of open addressing. When a collision occurs, quadratic probing does not simply skip a fixed number of steps but skips a number of steps equal to the "square of the number of probes", i.e., 1,4,9,.... steps
 
 Quadratic probing has the following advantages:
 
@@ -1688,3 +1690,14 @@ Clustering still exists, i.e., some positions are more likely to be occupied tha
 
 Due to the growth of squares, quadratic probing may not probe the entire hash table, meaning that even if there are empty buckets in the hash table, quadratic probing may not be able to access them.
 
+### Double hashing
+
+As the name suggests, the double hashing method uses multiple hash functions  f1(x), f2(x), f3(x), .... for probing.
+
+. Inserting Elements: If hash function f1(x) encounters a conflict, it tries f2(x) and so on, until an empty position is found and the element is inserted.
+
+. Searching for Elements: Search in the same order of hash functions until the target element is found and returned; if an empty position is encountered or all hash functions have been tried, it indicates the element is not in the hash table, then return None.
+
+Compared to linear probing, the double hashing method is less prone to clustering, but multiple hash functions introduce additional computational overhead.
+
+Please note that open addressing (linear probing, quadratic probing, and double hashing) hash tables all have the problem of "can not directly delete elements."
