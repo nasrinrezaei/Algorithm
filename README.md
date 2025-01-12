@@ -1701,3 +1701,103 @@ As the name suggests, the double hashing method uses multiple hash functions  f1
 Compared to linear probing, the double hashing method is less prone to clustering, but multiple hash functions introduce additional computational overhead.
 
 Please note that open addressing (linear probing, quadratic probing, and double hashing) hash tables all have the problem of "can not directly delete elements."
+
+## Hash algorithms
+
+The previous two sections introduced the working principle of hash tables and the methods to handle hash collisions. However, both open addressing and chaining can only ensure that the hash table functions normally when collisions occur, but cannot reduce the frequency of hash collisions.
+
+If hash collisions occur too frequently, the performance of the hash table will deteriorate drastically.  for a chaining hash table, in the ideal case, the key-value pairs are evenly distributed across the buckets, achieving optimal query efficiency; in the worst case, all key-value pairs are stored in the same bucket, degrading the time complexity to O(n). 
+
+The distribution of key-value pairs is determined by the hash function. Recalling the steps of calculating a hash function, first compute the hash value, then modulo it by the array length:
+
+```ruby
+index = hash(key) % capacity
+```
+
+Observing the above formula, when the hash table capacity  capacity  is fixed, the hash algorithm hash() determines the output value, thereby determining the distribution of key-value pairs in the hash table.
+
+This means that, to reduce the probability of hash collisions, we should focus on the design of the hash algorithm hash().
+
+## Goals of hash algorithms
+
+To achieve a "fast and stable" hash table data structure, hash algorithms should have the following characteristics:
+
+. Determinism: For the same input, the hash algorithm should always produce the same output. Only then can the hash table be reliable.
+
+. High efficiency: The process of computing the hash value should be fast enough. The smaller the computational overhead, the more practical the hash table.
+
+. Uniform distribution: The hash algorithm should ensure that key-value pairs are evenly distributed in the hash table. The more uniform the distribution, the lower the probability of hash collisions.
+
+In fact, hash algorithms are not only used to implement hash tables but are also widely applied in other fields.
+
+. Password storage: To protect the security of user passwords, systems usually do not store the plaintext passwords but rather the hash values of the passwords. When a user enters a password, the system calculates the hash value of the input and compares it with the stored hash value. If they match, the password is considered correct. 
+
+. Data integrity check: The data sender can calculate the hash value of the data and send it along; the receiver can recalculate the hash value of the received data and compare it with the received hash value. If they match, the data is considered intact.
+
+For cryptographic applications, to prevent reverse engineering such as deducing the original password from the hash value, hash algorithms need higher-level security features.
+
+. Unidirectionality: It should be impossible to deduce any information about the input data from the hash value.
+
+. Collision resistance: It should be extremely difficult to find two different inputs that produce the same hash value.
+
+. Avalanche effect: Minor changes in the input should lead to significant and unpredictable changes in the output.
+
+Note that "Uniform Distribution" and "Collision Resistance" are two separate concepts. Satisfying uniform distribution does not necessarily mean collision resistance. For example, under random input key, the hash function key % 100 can produce a uniformly distributed output. However, this hash algorithm is too simple, and all key with the same last two digits will have the same output, making it easy to deduce a usable key from the hash value, thereby cracking the password.
+
+## Design of hash algorithms
+
+The design of hash algorithms is a complex issue that requires consideration of many factors. However, for some less demanding scenarios, we can also design some simple hash algorithms.
+
+. Additive hash: Add up the ASCII codes of each character in the input and use the total sum as the hash value.
+
+. Multiplicative hash: Utilize the non-correlation of multiplication, multiplying each round by a constant, accumulating the ASCII codes of each character into the hash value.
+
+. XOR hash: Accumulate the hash value by XORing each element of the input data.
+
+. Rotating hash: Accumulate the ASCII code of each character into a hash value, performing a rotation operation on the hash value before each accumulation.
+
+```ruby
+def add_hash(key: str) -> int:
+    """Additive hash"""
+    hash = 0
+    modulus = 1000000007
+    for c in key:
+        hash += ord(c)
+    return hash % modulus
+
+def mul_hash(key: str) -> int:
+    """Multiplicative hash"""
+    hash = 0
+    modulus = 1000000007
+    for c in key:
+        hash = 31 * hash + ord(c)
+    return hash % modulus
+
+def xor_hash(key: str) -> int:
+    """XOR hash"""
+    hash = 0
+    modulus = 1000000007
+    for c in key:
+        hash ^= ord(c)
+    return hash % modulus
+
+def rot_hash(key: str) -> int:
+    """Rotational hash"""
+    hash = 0
+    modulus = 1000000007
+    for c in key:
+        hash = (hash << 4) ^ (hash >> 28) ^ ord(c)
+    return hash % modulus
+```
+
+It is observed that the last step of each hash algorithm is to take the modulus of the large prime number  1000000007 to ensure that the hash value is within an appropriate range. It is worth pondering why emphasis is placed on modulo a prime number, or what are the disadvantages of modulo a composite number? This is an interesting question.
+
+To conclude: Using a large prime number as the modulus can maximize the uniform distribution of hash values. Since a prime number does not share common factors with other numbers, it can reduce the periodic patterns caused by the modulo operation, thus avoiding hash collisions.
+
+For example, suppose we choose the composite number 9 as the modulus, which can be divided by 3, then all key divisible by 3 will be mapped to hash values 0, 3, 6.
+
+If the input key happens to have this kind of arithmetic sequence distribution, then the hash values will cluster, thereby exacerbating hash collisions. Now, suppose we replace modulus with the prime number 13,  since there are no common factors between key and modulus, the uniformity of the output hash values will be significantly improved.
+
+It is worth noting that if the key is guaranteed to be randomly and uniformly distributed, then choosing a prime number or a composite number as the modulus can both produce uniformly distributed hash values. However, when the distribution of key has some periodicity, modulo a composite number is more likely to result in clustering.
+
+In summary, we usually choose a prime number as the modulus, and this prime number should be large enough to eliminate periodic patterns as much as possible, enhancing the robustness of the hash algorithm.
